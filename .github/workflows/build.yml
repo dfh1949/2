@@ -10,7 +10,7 @@ on:
     types: [started]
 
 env:
-  src_git: git@github.com:dfh1949/9.git
+  src_git: https://github.com/dfh1949/9.git
   src_dir: /opt/padavan
   work_dir: /opt/padavan/trunk
   firmware_dir: /opt/firmware
