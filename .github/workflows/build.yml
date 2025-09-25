@@ -24,7 +24,7 @@ jobs:
     if: github.event.repository.owner.id == github.event.sender.id
     strategy:
       matrix:
-        device: [OYE-001]
+        device: [RT-N11P]
     permissions: 
       contents: write
 
