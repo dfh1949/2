@@ -10,7 +10,7 @@ on:
     types: [started]
 
 env:
-  src_git: https://github.com/MeIsReallyBa/padavan-4.4.git
+  src_git: https://github.com/keke1023/Padavan.git
   src_dir: /opt/padavan
   work_dir: /opt/padavan/trunk
   firmware_dir: /opt/firmware
@@ -24,7 +24,7 @@ jobs:
     if: github.event.repository.owner.id == github.event.sender.id
     strategy:
       matrix:
-        device: [RM2100]
+        device: [K2P]
     permissions: 
       contents: write
 
