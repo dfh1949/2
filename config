@@ -20,7 +20,7 @@ CONFIG_LINUXDIR=linux-3.4.x
 CONFIG_FIRMWARE_WIFI2_DRIVER=3.0
 
 ### Enable IPv6 support (turn off if you don't need IPv6 to save space)
-CONFIG_FIRMWARE_ENABLE_IPV6=y
+CONFIG_FIRMWARE_ENABLE_IPV6=n
 
 ### Enable USB support (explicitly disabled)
 CONFIG_FIRMWARE_ENABLE_USB=n
@@ -95,7 +95,7 @@ CONFIG_FIRMWARE_INCLUDE_HTOP=n
 CONFIG_FIRMWARE_INCLUDE_IPERF3=n
 
 ### NAT66 (IPv6 NAT helper) - disable when IPv6 is off
-CONFIG_FIRMWARE_INCLUDE_NAPT66=y
+CONFIG_FIRMWARE_INCLUDE_NAPT66=n
 
 ### Other optional tools (turned off)
 CONFIG_FIRMWARE_INCLUDE_SFTP=n
