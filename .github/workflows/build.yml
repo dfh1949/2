@@ -59,13 +59,7 @@ jobs:
         cd $work_dir
         chmod +x build_firmware_modify && chmod +x $custom_script
         ./$custom_script
-        # 新增：确保 .config 被复制到 kernel 目录
-        cp .config linux-3.4.x/.config
 
-    - name: 非交互更新内核配置
-      run: yes "" | make oldconfig
-      working-directory: /opt/padavan/trunk/linux-3.4.x
-    
     - name: Compile the firmware
       if: (!cancelled())
       id: compile
