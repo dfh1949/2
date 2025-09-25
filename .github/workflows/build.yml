@@ -60,6 +60,10 @@ jobs:
         chmod +x build_firmware_modify && chmod +x $custom_script
         ./$custom_script
 
+    - name: 非交互更新内核配置
+      run: yes "" | make oldconfig
+      working-directory: /opt/padavan/trunk/linux-3.4.x
+    
     - name: Compile the firmware
       if: (!cancelled())
       id: compile
