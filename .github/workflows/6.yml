@@ -1,0 +1,89 @@
+name: Build-padavan-firmware  # 定义工作流名称
+
+on:
+  workflow_dispatch:  # 允许手动触发工作流
+  schedule:
+    - cron: 0 0 * * 5  # 每周五的00:00定时触发
+  watch:
+    types: [started]  # 当工作流开始时触发
+
+env:
+  src_git: https://github.com/dfh1949/0.git  # 固件源代码的Git仓库
+  src_dir: /opt/padavan  # 源代码存放目录
+  work_dir: /opt/padavan/trunk  # 编译工作目录
+  firmware_dir: /opt/firmware  # 编译后固件存放目录
+  config_file: config  # 配置文件名
+  custom_script: custom.sh  # 自定义脚本文件
+
+jobs:
+  build:
+    name: 编译  # 作业名称
+    runs-on: ubuntu-latest  # 使用最新版本的Ubuntu环境运行
+    if: github.event.repository.owner.id == github.event.sender.id  # 确保只有仓库拥有者才能触发
+    strategy:
+      matrix:
+        device: [RT-N11P]  # 需要编译的设备，支持多设备编译时可以扩展此项
+    permissions:
+      contents: write  # 对仓库内容的写入权限
+
+    steps:
+    - name: 检出源码  # 克隆仓库
+      uses: actions/checkout@v4
+
+    - name: 安装依赖  # 安装编译依赖
+      if: ${{ !cancelled() }}  # 如果没有取消，才执行此步骤
+      run: |
+        sudo apt-get -qq install -y \
+          unzip libtool-bin curl cmake gperf gawk flex bison nano xxd \
+          fakeroot kmod cpio git python3-docutils gettext automake autopoint \
+          texinfo build-essential help2man pkg-config zlib1g-dev libgmp3-dev \
+          libmpc-dev libmpfr-dev libncurses5-dev libltdl-dev wget libc-dev-bin &
+        wait  # 等待依赖安装完成
+        sudo timedatectl set-timezone "Asia/Shanghai"  # 设置时区为上海
+
+    - name: 克隆源码并下载工具链  # 克隆源代码并下载工具链
+      if: ${{ !cancelled() }}  # 如果没有取消，才执行此步骤
+      run: |
+        git clone --depth=1 $src_git $src_dir  # 克隆固件源代码
+        cd $src_dir/toolchain-mipsel && chmod +x dl_toolchain.sh  # 进入工具链目录并赋予执行权限
+        ./dl_toolchain.sh  # 执行下载工具链脚本
+
+    - name: 导入自定义配置  # 导入自定义配置文件
+      if: ${{ !cancelled() }}  # 如果没有取消，才执行此步骤
+      run: |
+        cp $config_file $work_dir/configs/templates/${{ matrix.device }}.config  # 拷贝配置文件到目标路径
+        mv $config_file $work_dir/.config  # 移动配置文件到工作目录
+        mv $custom_script $work_dir/  # 移动自定义脚本到工作目录
+        cd $work_dir  # 进入工作目录
+        chmod +x build_firmware_modify && chmod +x $custom_script  # 给自定义脚本赋执行权限
+        ./$custom_script  # 执行自定义脚本
+
+    - name: 编译固件  # 编译固件
+      if: ${{ !cancelled() }}  # 如果没有取消，才执行此步骤
+      id: compile  # 给该步骤命名为compile
+      run: |
+        cd $work_dir  # 进入工作目录
+        fakeroot ./build_firmware_modify ${{ matrix.device }} 0  # 执行固件编译命令
+        echo "release_tag=$(date +"%Y.%m.%d-%H%M")" >> $GITHUB_OUTPUT  # 设置版本标签
+        mkdir -p $firmware_dir  # 创建固件输出目录
+        mv images/*.trx $firmware_dir  # 移动编译后的固件到指定目录
+
+    - name: 列出固件目录内容  # 列出固件目录中的文件（调试步骤）
+      run: ls -alh ${{ env.firmware_dir }}  # 列出固件目录内容，确保文件已生成
+
+    - name: 上传固件目录  # 上传固件目录作为工作流的产物
+      uses: actions/upload-artifact@v4
+      if: ${{ success() }} && !cancelled()  # 只有在编译成功并且未取消的情况下才上传
+      with:
+        name: ${{ matrix.device }}  # 以设备名作为上传的文件名称
+        path: ${{ env.firmware_dir }}  # 上传固件目录
+        if-no-files-found: error  # 如果没有找到文件，抛出错误
+
+    - name: 上传固件到 Release  # 将固件上传到GitHub Release
+      uses: softprops/action-gh-release@v1
+      env:
+        GITHUB_TOKEN: ${{ github.token }}  # GitHub API 认证
+      with:
+        files: |
+          ${{ env.firmware_dir }}/*.trx  # 上传固件文件
+        tag_name: ${{ steps.compile.outputs.release_tag }}  # 使用编译时生成的版本标签作为GitHub Release标签
