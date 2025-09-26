@@ -10,7 +10,7 @@ on:
     types: [started]
 
 env:
-  src_git: https://github.com/dfh1949/9.git
+  src_git: https://github.com/dfh1949/8.git
   src_dir: /opt/padavan
   work_dir: /opt/padavan/trunk
   firmware_dir: /opt/firmware
@@ -47,6 +47,8 @@ jobs:
       if: (!cancelled())
       run: |
         git clone --depth=1 $src_git $src_dir
+        git clone --depth=1 https://github.com/MeIsReallyBa/padavan-4.4.git /opt/1
+        mv /opt/1/toolchain-mipsel /opt/padavan
         cd $src_dir/toolchain-mipsel && chmod +x dl_toolchain.sh
         ./dl_toolchain.sh
     
