@@ -1,4 +1,4 @@
-name: Build-padavan-firmware  # 定义工作流名称
+name: padava编译  # 定义工作流名称
 
 on:
   workflow_dispatch:  # 允许手动触发工作流
