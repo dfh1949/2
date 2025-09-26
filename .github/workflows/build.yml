@@ -1,4 +1,4 @@
-name: Build-padavan-firmware
+name: 人类
 
 on:
   workflow_dispatch:
