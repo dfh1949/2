@@ -10,7 +10,7 @@ on:
     types: [started]
 
 env:
-  src_git: https://github.com/dfh1949/0.git
+  src_git: https://github.com/dfh1949/3.git
   src_dir: /opt/padavan
   work_dir: /opt/padavan/trunk
   firmware_dir: /opt/firmware
@@ -59,18 +59,6 @@ jobs:
         cd $work_dir
         chmod +x build_firmware_modify && chmod +x $custom_script
         ./$custom_script
-
-    # ========== 新增步骤：修复 /bin/sh 软链接问题 ==========
-    - name: Fix Shell Compatibility
-      if: (!cancelled())
-      run: |
-        echo "Forcing /bin/sh to use bash to fix OpenSSL configure error (Error 127)"
-        # 使用 sudo 权限来修改系统软链接，这在编译 Padavan 时几乎必需
-        sudo rm -f /bin/sh
-        sudo ln -s /bin/bash /bin/sh
-        # 确认更改
-        ls -l /bin/sh
-    # ======================================================
 
     - name: Compile the firmware
       if: (!cancelled())
